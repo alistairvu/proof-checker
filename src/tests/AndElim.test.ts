@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 // tests/AndElim.test.ts
 
-import { AndElim } from "../lib/rule";
+import { AndElim } from "../lib/rules";
 import { Conjunction, Atom } from "../lib/formula";
 import { type ProofLine } from "../lib/rule";
 

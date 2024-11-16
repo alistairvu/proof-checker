@@ -110,9 +110,6 @@ export class Parser {
         return new Conjunction(left, right);
       case TokenType.Imply:
         return new Implication(left, right);
-      default:
-        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-        throw new Error(`Unknown binary operator: ${operator}`);
     }
   }
 
@@ -155,26 +152,26 @@ function testParser(input: string) {
   }
 }
 
-// Test cases
-const testInputs = [
-  "A",
-  "\\bot",
-  "¬A",
-  "(A∨B)",
-  "(A∧B)",
-  "(A→B)",
-  "¬(A∨¬B)",
-  "((A∧B)→¬C)",
-  "(¬A∨(B∧C))",
-  "¬¬A",
-  "((A∨B) & (C ->  D))",
-  "¬(A→(¬B∨C))",
-  "((¬A)∨B)",
-  "(A∨)", // Invalid
-  "A∧", // Invalid
-  "(A∨B", // Invalid
-];
+// // Test cases
+// const testInputs = [
+//   "A",
+//   "\\bot",
+//   "¬A",
+//   "(A∨B)",
+//   "(A∧B)",
+//   "(A→B)",
+//   "¬(A∨¬B)",
+//   "((A∧B)→¬C)",
+//   "(¬A∨(B∧C))",
+//   "¬¬A",
+//   "((A∨B) & (C ->  D))",
+//   "¬(A→(¬B∨C))",
+//   "((¬A)∨B)",
+//   "(A∨)", // Invalid
+//   "A∧", // Invalid
+//   "(A∨B", // Invalid
+// ];
 
-for (const input of testInputs) {
-  testParser(input);
-}
+// for (const input of testInputs) {
+//   testParser(input);
+// }

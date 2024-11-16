@@ -11,6 +11,8 @@ export abstract class Formula {
   abstract getChildren(): Formula[];
 
   abstract toString(): string;
+
+  abstract equals(other: Formula): boolean;
 }
 
 /**
@@ -23,6 +25,10 @@ export class Falsum extends Formula {
 
   toString() {
     return "⊥";
+  }
+
+  equals(other: Formula) {
+    return other instanceof Falsum;
   }
 }
 
@@ -44,6 +50,10 @@ export class Atom extends Formula {
   toString() {
     return this.name;
   }
+
+  equals(other: Formula) {
+    return other instanceof Atom && other.name === this.name;
+  }
 }
 
 /**
@@ -63,6 +73,10 @@ export class Negation extends Formula {
 
   toString() {
     return `¬${this.form.toString()}`;
+  }
+
+  equals(other: Formula) {
+    return other instanceof Negation && other.form.equals(this.form);
   }
 }
 
@@ -86,6 +100,14 @@ export class Conjunction extends Formula {
   toString() {
     return `(${this.left.toString()} ∧ ${this.right.toString()})`;
   }
+
+  equals(other: Formula) {
+    return (
+      other instanceof Conjunction &&
+      other.left.equals(this.left) &&
+      other.right.equals(this.right)
+    );
+  }
 }
 
 /**
@@ -108,6 +130,14 @@ export class Disjunction extends Formula {
   toString() {
     return `(${this.left.toString()} ∨ ${this.right.toString()})`;
   }
+
+  equals(other: Formula) {
+    return (
+      other instanceof Disjunction &&
+      other.left.equals(this.left) &&
+      other.right.equals(this.right)
+    );
+  }
 }
 /**
  * Represents an implication
@@ -128,5 +158,13 @@ export class Implication extends Formula {
 
   toString() {
     return `(${this.left.toString()} → ${this.right.toString()})`;
+  }
+
+  equals(other: Formula) {
+    return (
+      other instanceof Implication &&
+      other.left.equals(this.left) &&
+      other.right.equals(this.right)
+    );
   }
 }

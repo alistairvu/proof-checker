@@ -26,7 +26,7 @@ export class AndIntro extends Rule {
 
     if (
       third.references[0] !== first.line ||
-      third.references[0] !== second.line
+      third.references[1] !== second.line
     ) {
       throw new Error("Incorrect set of references.");
     }
@@ -39,33 +39,42 @@ export class AndIntro extends Rule {
       throw new Error("∧ Elim operates on two lines");
     }
 
-    if (first.assumptions.length !== second.assumptions.length) {
+    const target = new Set(first.assumptions);
+
+    for (const val of second.assumptions) {
+      target.add(val);
+    }
+
+    if (third.assumptions.length !== target.size) {
       throw new Error("Incorrect set of assumptions");
     }
 
     for (const assumption of third.assumptions) {
-      if (!second.assumptions.includes(assumption)) {
+      if (!target.has(assumption)) {
         throw new Error("Incorrect set of assumptions");
       }
     }
   }
 
   checkFormulas(lines: ProofLine[]): void {
-    const [first, second] = lines;
+    const [first, second, third] = lines as [ProofLine, ProofLine, ProofLine];
 
-    if (first === undefined || second === undefined) {
-      throw new Error("∧ Elim operates on two lines");
-    }
-
-    if (!(first.formula instanceof Conjunction)) {
+    if (!(third.formula instanceof Conjunction)) {
       throw new Error(
         `Line ${first.line} must be a conjunction to apply rule ${this.toString()}`,
       );
     }
 
-    const [left, right] = first.formula.getChildren();
+    const [left, right] = third.formula.getChildren();
 
-    if (second.formula !== left && second.formula !== right) {
+    console.log(left?.equals(first.formula) && right?.equals(second.formula));
+
+    if (
+      !(
+        (left?.equals(first.formula) && right?.equals(second.formula)) ||
+        (left?.equals(second.formula) && right?.equals(first.formula))
+      )
+    ) {
       throw new Error(
         `Cannot apply rule ${this.toString()} with formulae ${first.formula.toString()} and ${second.formula.toString()}`,
       );
