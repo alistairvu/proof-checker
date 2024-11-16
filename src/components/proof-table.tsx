@@ -40,7 +40,12 @@ const proofTableColumns: ColumnDef<ProofLine>[] = [
   {
     accessorKey: "assumptions",
     header: "Assumptions",
-    cell: ({ row }) => (row.getValue("assumptions") as number[]).join(", "),
+    cell: ({ row }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const assumptions = row.getValue("assumptions") as number[];
+
+      return assumptions.join(", ");
+    },
   },
   {
     accessorKey: "formula",
@@ -53,7 +58,12 @@ const proofTableColumns: ColumnDef<ProofLine>[] = [
   {
     accessorKey: "references",
     header: "References",
-    cell: ({ row }) => (row.getValue("references") as number[]).join(", "),
+    cell: ({ row }) => {
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      const references = row.getValue("references") as number[];
+
+      return references.join(", ");
+    },
   },
 ];
 
@@ -67,7 +77,6 @@ export const ProofTable = () => {
   });
 
   const [error, setError] = useState("");
-  const router = useRouter();
 
   const table = useReactTable({
     data: proof?.lines ?? [],
