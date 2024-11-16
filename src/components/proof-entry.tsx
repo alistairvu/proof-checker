@@ -25,10 +25,18 @@ export const ProofEntry = () => {
 
     try {
       const formulae = proofInput.split("\n").map((line) => {
-        const tokenizer = new Tokenizer(line);
-        const tokens = tokenizer.getTokens();
-        const parser = new Parser(tokens);
-        return parser.parse();
+        try {
+          const tokenizer = new Tokenizer(line);
+          const tokens = tokenizer.getTokens();
+          const parser = new Parser(tokens);
+          return parser.parse();
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        } catch (_e) {
+          const tokenizer = new Tokenizer(`(${line})`);
+          const tokens = tokenizer.getTokens();
+          const parser = new Parser(tokens);
+          return parser.parse();
+        }
       });
 
       const conclusion = formulae.pop();

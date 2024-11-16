@@ -149,9 +149,17 @@ export const ProofTable = () => {
       const tokens = tokenizer.getTokens();
       const parser = new Parser(tokens);
       formula = parser.parse();
-    } catch (e) {
-      setError(`Error while parsing formula: ${(e as Error).message}`);
-      return;
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    } catch (_e) {
+      try {
+        const tokenizer = new Tokenizer(`(${nextLine.formula})`);
+        const tokens = tokenizer.getTokens();
+        const parser = new Parser(tokens);
+        formula = parser.parse();
+      } catch (e) {
+        setError(`Error while parsing formula: ${(e as Error).message}`);
+        return;
+      }
     }
 
     // Parsing justification
