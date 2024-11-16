@@ -17,13 +17,14 @@ import {
   TableCell,
 } from "./ui/table";
 import { Input } from "./ui/input";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { VALID_RULES } from "~/lib/rules";
 import { Parser } from "~/lib/parser";
 import { Tokenizer } from "~/lib/tokenizer";
+import { Falsum, type Formula } from "~/lib/formula";
 
 const proofTableColumns: ColumnDef<ProofLine>[] = [
   {
@@ -62,14 +63,17 @@ const proofTableColumns: ColumnDef<ProofLine>[] = [
 
 export const ProofTable = () => {
   const { proof, setProof } = useProofContext()!;
+
   const [nextLine, setNextLine] = useState({
     assumptions: "",
     formula: "",
-    justification: "Assumption Introduction",
+    justification: "Asmp Intr",
     references: "",
   });
 
   const [error, setError] = useState("");
+
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const table = useReactTable({
     data: proof?.lines ?? [],
@@ -108,94 +112,118 @@ export const ProofTable = () => {
 
     setError("");
 
+    const assumptions =
+      nextLine.assumptions.trim().length === 0
+        ? []
+        : nextLine.assumptions
+            .trim()
+            .split(/[\s,]+/)
+            .map((x) => parseInt(x));
+
+    for (const value of assumptions) {
+      if (isNaN(value)) {
+        setError("Error in parsing assumptions.");
+        return;
+      }
+    }
+
+    const references =
+      nextLine.references.trim().length === 0
+        ? []
+        : nextLine.references
+            .trim()
+            .split(/[\s,]+/)
+            .map((x) => parseInt(x));
+
+    for (const value of references) {
+      if (isNaN(value)) {
+        setError("Error in parsing references.");
+        return;
+      }
+    }
+
+    let formula: Formula = new Falsum();
+
     try {
-      const assumptions =
-        nextLine.assumptions.trim().length === 0
-          ? []
-          : nextLine.assumptions
-              .trim()
-              .split(/[\s,]+/)
-              .map((x) => parseInt(x));
-
-      for (const value of assumptions) {
-        if (isNaN(value)) {
-          setError("Error in parsing assumptions.");
-          return;
-        }
-      }
-
-      const references =
-        nextLine.references.trim().length === 0
-          ? []
-          : nextLine.references
-              .trim()
-              .split(/[\s,]+/)
-              .map((x) => parseInt(x));
-
-      for (const value of references) {
-        if (isNaN(value)) {
-          setError("Error in parsing references.");
-          return;
-        }
-      }
-
       const tokenizer = new Tokenizer(nextLine.formula);
       const tokens = tokenizer.getTokens();
       const parser = new Parser(tokens);
-      const formula = parser.parse();
-
-      // Parsing justification
-      const ruleMatch = VALID_RULES.find(
-        (x) => x.name === nextLine.justification,
-      );
-
-      if (ruleMatch === undefined) {
-        setError(`Error: unknown rule ${nextLine.justification}.`);
-        return;
-      }
-
-      // Checking validity
-      const rule = ruleMatch.rule;
-
-      const proofLines = references
-        .map((x) => proof.lines[x - 1])
-        .filter((x) => x !== undefined);
-
-      const parsedLine: ProofLine = {
-        line: proof.lines.length + 1,
-        assumptions,
-        rule,
-        references,
-        formula,
-      };
-
-      proofLines.push(parsedLine);
-
-      try {
-        rule.validate(proofLines);
-      } catch (e) {
-        setError(`Error while applying rule: ${(e as Error).message}`);
-        return;
-      }
-
-      setProof((prev) =>
-        prev === null
-          ? null
-          : {
-              ...prev,
-              lines: [...prev.lines, parsedLine],
-            },
-      );
-
-      setNextLine({
-        assumptions: "",
-        formula: "",
-        justification: "Assumption Introduction",
-        references: "",
-      });
+      formula = parser.parse();
     } catch (e) {
       setError(`Error while parsing formula: ${(e as Error).message}`);
+      return;
     }
+
+    // Parsing justification
+    const ruleMatch = VALID_RULES.find(
+      (x) => x.name === nextLine.justification,
+    );
+
+    if (ruleMatch === undefined) {
+      setError(`Error: unknown rule ${nextLine.justification}.`);
+      return;
+    }
+
+    // Checking validity
+    const rule = ruleMatch.rule;
+
+    const proofLines = references
+      .map((x) => proof.lines[x - 1])
+      .filter((x) => x !== undefined);
+
+    const parsedLine: ProofLine = {
+      line: (proof.lines[proof.lines.length - 1]?.line ?? 0) + 1,
+      assumptions,
+      rule,
+      references,
+      formula,
+    };
+
+    proofLines.push(parsedLine);
+
+    try {
+      rule.validate(proofLines);
+    } catch (e) {
+      setError(`Error while applying rule: ${(e as Error).message}`);
+      return;
+    }
+
+    setProof((prev) =>
+      prev === null
+        ? null
+        : {
+            ...prev,
+            lines: [...prev.lines, parsedLine],
+          },
+    );
+
+    setNextLine({
+      assumptions: "",
+      formula: "",
+      justification: "Asmp Intr",
+      references: "",
+    });
+
+    inputRef.current?.focus();
+  };
+
+  const removeProofLine = (line: number) => {
+    if (proof === null) {
+      return;
+    }
+
+    if (line <= proof.premises.length) {
+      return;
+    }
+
+    setProof((prev) =>
+      prev === null
+        ? null
+        : {
+            ...prev,
+            lines: prev?.lines.filter((x) => x.line !== line),
+          },
+    );
   };
 
   if (proof === null) {
@@ -210,115 +238,145 @@ export const ProofTable = () => {
       </p>
 
       <div className="w-full rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
-                    </TableHead>
-                  );
-                })}
-                <TableHead />
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            addProofLine();
+          }}
+        >
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <TableHead key={header.id}>
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                      </TableHead>
+                    );
+                  })}
+                  <TableHead />
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                  {row.original.line > proof.premises.length &&
+                  !isProofComplete() ? (
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        type="button"
+                        onClick={() => removeProofLine(row.original.line)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  ) : (
+                    <TableCell>
+                      <div className="h-9"></div>
+                    </TableCell>
+                  )}
+                </TableRow>
+              ))}
+
+              {!isProofComplete() && (
+                <TableRow>
+                  <TableCell>
+                    {(proof.lines[proof.lines.length - 1]?.line ?? 0) + 1}
                   </TableCell>
-                ))}
-              </TableRow>
-            ))}
+                  <TableCell>
+                    <Input
+                      type="text"
+                      ref={inputRef}
+                      placeholder="Assumption"
+                      value={nextLine.assumptions}
+                      onChange={(e) =>
+                        setNextLine((line) => ({
+                          ...line,
+                          assumptions: e.target.value,
+                        }))
+                      }
+                    />
+                  </TableCell>
 
-            {!isProofComplete() && (
-              <TableRow>
-                <TableCell>{proof.lines.length + 1}</TableCell>
-                <TableCell>
-                  <Input
-                    type="text"
-                    placeholder="Assumption"
-                    value={nextLine.assumptions}
-                    onChange={(e) =>
-                      setNextLine((line) => ({
-                        ...line,
-                        assumptions: e.target.value,
-                      }))
-                    }
-                  />
-                </TableCell>
+                  <TableCell>
+                    <Input
+                      type="text"
+                      placeholder="Formula"
+                      value={nextLine.formula}
+                      onChange={(e) =>
+                        setNextLine((line) => ({
+                          ...line,
+                          formula: e.target.value,
+                        }))
+                      }
+                    />
+                  </TableCell>
 
-                <TableCell>
-                  <Input
-                    type="text"
-                    placeholder="Formula"
-                    value={nextLine.formula}
-                    onChange={(e) =>
-                      setNextLine((line) => ({
-                        ...line,
-                        formula: e.target.value,
-                      }))
-                    }
-                  />
-                </TableCell>
+                  <TableCell>
+                    <Select
+                      value={nextLine.justification}
+                      onValueChange={(value) => {
+                        setNextLine((prev) => ({
+                          ...prev,
+                          justification: value,
+                        }));
+                      }}
+                    >
+                      <SelectTrigger>{nextLine.justification}</SelectTrigger>
+                      <SelectContent>
+                        {VALID_RULES.map((rule) => (
+                          <SelectItem key={rule.name} value={rule.name}>
+                            {rule.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </TableCell>
 
-                <TableCell>
-                  <Select
-                    value={nextLine.justification}
-                    onValueChange={(value) => {
-                      setNextLine((prev) => ({
-                        ...prev,
-                        justification: value,
-                      }));
-                    }}
-                  >
-                    <SelectTrigger>{nextLine.justification}</SelectTrigger>
-                    <SelectContent>
-                      {VALID_RULES.map((rule) => (
-                        <SelectItem key={rule.name} value={rule.name}>
-                          {rule.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </TableCell>
+                  <TableCell>
+                    <Input
+                      type="text"
+                      placeholder="References"
+                      value={nextLine.references}
+                      onChange={(e) =>
+                        setNextLine((line) => ({
+                          ...line,
+                          references: e.target.value,
+                        }))
+                      }
+                    />
+                  </TableCell>
 
-                <TableCell>
-                  <Input
-                    type="text"
-                    placeholder="References"
-                    value={nextLine.references}
-                    onChange={(e) =>
-                      setNextLine((line) => ({
-                        ...line,
-                        references: e.target.value,
-                      }))
-                    }
-                  />
-                </TableCell>
-
-                <TableCell>
-                  <Button size="icon" onClick={addProofLine}>
-                    <PlusIcon />
-                  </Button>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                  <TableCell>
+                    <Button size="icon" type="submit">
+                      <PlusIcon />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </form>
       </div>
 
       {error && (
@@ -328,15 +386,13 @@ export const ProofTable = () => {
       )}
 
       {isProofComplete() && (
-        <>
-          <div className="w-full rounded border border-green-700 bg-green-100 p-1 text-green-700">
-            Congratulations! You have completed your proof. Lines:{" "}
-            {proof.lines.length}
-          </div>
-
-          <Button onClick={() => setProof(null)}>Do another proof</Button>
-        </>
+        <div className="w-full rounded border border-green-700 bg-green-100 p-1 text-green-700">
+          Congratulations! You have completed your proof. Lines:{" "}
+          {proof.lines.length}
+        </div>
       )}
+
+      <Button onClick={() => setProof(null)}>Do another proof</Button>
     </div>
   );
 };

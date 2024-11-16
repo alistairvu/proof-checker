@@ -65,6 +65,7 @@ export const ProofEntry = () => {
       <Textarea
         placeholder="Enter your proof here..."
         value={proofInput}
+        rows={8}
         onChange={(e) => setProofInput(e.target.value)}
       />
 

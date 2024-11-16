@@ -1,4 +1,4 @@
-import { Rule } from "../rule";
+import { type Rule } from "../rule";
 import { AndElim } from "./AndElim";
 import { AndIntro } from "./AndIntro";
 import { AsmpIntro } from "./AsmpIntro";
@@ -28,31 +28,40 @@ export { NotElim } from "./NotElim";
 
 export const VALID_RULES: { name: string; rule: Rule; use?: string }[] = [
   {
-    name: "Assumption Introduction",
+    name: new AsmpIntro().toString(),
     rule: new AsmpIntro(),
     use: `Assumption Introduction does not expect any references.`,
   },
   {
-    name: "Conjunction Elimination",
+    name: new AndElim().toString(),
     rule: new AndElim(),
-    use: `Conjunction Elimination expects one reference:
-    
-1. Formula A ∧ B`,
+    use: `Conjunction Elimination expects one reference: formula A ∧ B`,
   },
   {
-    name: "Conjunction Introduction",
+    name: new AndIntro().toString(),
     rule: new AndIntro(),
-    use: `Conjunction Introduction expects two references, in this order:
-    
-1. Formula A
-2. Formula B`,
+    use: `Conjunction Introduction expects two references, in this order: formula A and formula B`,
   },
-  { name: "Disjunction Elimination", rule: new OrElim() },
-  { name: "Disjunction Introduction", rule: new OrIntro() },
-  { name: "Implication Elimination", rule: new ToElim() },
-  { name: "Implication Introduction", rule: new ToIntro() },
-  { name: "Falsum Introduction", rule: new FalsumIntro() },
-  { name: "Falsum Elimination", rule: new FalsumElim() },
-  { name: "Negation Introduction", rule: new NotIntro() },
-  { name: "Negation Elimination", rule: new NotElim() },
+  {
+    name: new OrElim().toString(),
+    rule: new OrElim(),
+    use: `Disjunction Elimination expects five references, in this order:
+    
+1. Formula A ∨ B
+2. Formula A as an assumption
+3. Formula C with formula A is an assumption
+4. Formula B as an assumption
+5. Formula C with formula B as an assumption`,
+  },
+  {
+    name: new OrIntro().toString(),
+    rule: new OrIntro(),
+    use: "Disjunction Introduction expects only one reference.",
+  },
+  { name: new ToElim().toString(), rule: new ToElim() },
+  { name: new ToIntro().toString(), rule: new ToIntro() },
+  { name: new FalsumIntro().toString(), rule: new FalsumIntro() },
+  { name: new FalsumElim().toString(), rule: new FalsumElim() },
+  { name: new NotIntro().toString(), rule: new NotIntro() },
+  { name: new NotElim().toString(), rule: new NotElim() },
 ];
