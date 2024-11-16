@@ -7,7 +7,7 @@ import {
   type ColumnDef,
 } from "@tanstack/react-table";
 import { useProofContext } from "~/contexts/proof-context";
-import { type Rule, type ProofLine } from "~/lib/rule";
+import { type ProofLine } from "~/lib/rule";
 import {
   Table,
   TableHeader,
@@ -20,17 +20,10 @@ import { Input } from "./ui/input";
 import { PlusIcon } from "lucide-react";
 import { Button } from "./ui/button";
 import { useState } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { VALID_RULES } from "~/lib/rules";
 import { Parser } from "~/lib/parser";
 import { Tokenizer } from "~/lib/tokenizer";
-import { useRouter } from "next/navigation";
 
 const proofTableColumns: ColumnDef<ProofLine>[] = [
   {
@@ -336,12 +329,12 @@ export const ProofTable = () => {
 
       {isProofComplete() && (
         <>
-          <div className="w-full rounded border-green-700 bg-green-100 p-1 text-green-700">
+          <div className="w-full rounded border border-green-700 bg-green-100 p-1 text-green-700">
             Congratulations! You have completed your proof. Lines:{" "}
             {proof.lines.length}
           </div>
 
-          <Button onClick={(e) => setProof(null)}>Do another proof</Button>
+          <Button onClick={() => setProof(null)}>Do another proof</Button>
         </>
       )}
     </div>
