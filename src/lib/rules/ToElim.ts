@@ -4,7 +4,7 @@ import { Rule, type ProofLine } from "../rule";
 // Implication Elimination
 export class ToElim extends Rule {
   toString() {
-    return "→ Elim";
+    return "Implication Elimination";
   }
 
   checkLineCount(lines: ProofLine[]) {

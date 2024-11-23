@@ -4,7 +4,7 @@ import { Rule, type ProofLine } from "../rule";
 // Disjunction Introduction
 export class OrIntro extends Rule {
   toString() {
-    return "∨ Intr";
+    return "Disjunction Introduction";
   }
 
   checkLineCount(lines: ProofLine[]) {

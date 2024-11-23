@@ -19,7 +19,7 @@ import {
 import { Input } from "./ui/input";
 import { PlusIcon, X } from "lucide-react";
 import { Button } from "./ui/button";
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select";
 import { VALID_RULES } from "~/lib/rules";
 import { Parser } from "~/lib/parser";
@@ -67,7 +67,7 @@ export const ProofTable = () => {
   const [nextLine, setNextLine] = useState({
     assumptions: "",
     formula: "",
-    justification: "Asmp Intr",
+    justification: "Assumption Introduction",
     references: "",
   });
 
@@ -81,7 +81,12 @@ export const ProofTable = () => {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const isProofComplete = () => {
+  /**
+   * Verifies if the proof is complete or not.
+   *
+   * @returns true if the proof is complete
+   */
+  const isProofComplete = useMemo(() => {
     if (proof == null) {
       return false;
     }
@@ -103,8 +108,13 @@ export const ProofTable = () => {
     }
 
     return true;
-  };
+  }, [proof]);
 
+  /**
+   * Handles the addition of a new proof line into the proof.
+   *
+   * @returns
+   */
   const addProofLine = () => {
     if (proof === null) {
       return;
@@ -208,12 +218,21 @@ export const ProofTable = () => {
     setNextLine({
       assumptions: "",
       formula: "",
-      justification: "Asmp Intr",
+      justification: "Assumption Introduction",
       references: "",
     });
 
     inputRef.current?.focus();
   };
+
+  const ruleUse = useMemo(() => {
+    // Parsing justification
+    const ruleMatch = VALID_RULES.find(
+      (x) => x.name === nextLine.justification,
+    );
+
+    return ruleMatch?.use;
+  }, [nextLine.justification]);
 
   const removeProofLine = (line: number) => {
     if (proof === null) {
@@ -287,7 +306,7 @@ export const ProofTable = () => {
                     </TableCell>
                   ))}
                   {row.original.line > proof.premises.length &&
-                  !isProofComplete() ? (
+                  !isProofComplete ? (
                     <TableCell>
                       <Button
                         variant="ghost"
@@ -306,7 +325,7 @@ export const ProofTable = () => {
                 </TableRow>
               ))}
 
-              {!isProofComplete() && (
+              {!isProofComplete && (
                 <TableRow>
                   <TableCell>
                     {(proof.lines[proof.lines.length - 1]?.line ?? 0) + 1}
@@ -350,7 +369,9 @@ export const ProofTable = () => {
                         }));
                       }}
                     >
-                      <SelectTrigger>{nextLine.justification}</SelectTrigger>
+                      <SelectTrigger tabIndex={0}>
+                        {nextLine.justification}
+                      </SelectTrigger>
                       <SelectContent>
                         {VALID_RULES.map((rule) => (
                           <SelectItem key={rule.name} value={rule.name}>
@@ -387,14 +408,20 @@ export const ProofTable = () => {
         </form>
       </div>
 
+      {ruleUse && !isProofComplete && (
+        <div className="w-full whitespace-break-spaces rounded border border-blue-700 bg-blue-100 p-2 text-blue-700">
+          {ruleUse}
+        </div>
+      )}
+
       {error && (
-        <div className="w-full rounded border border-rose-700 bg-rose-100 p-1 text-rose-700">
+        <div className="w-full rounded border border-rose-700 bg-rose-100 p-2 text-rose-700">
           {error}
         </div>
       )}
 
-      {isProofComplete() && (
-        <div className="w-full rounded border border-green-700 bg-green-100 p-1 text-green-700">
+      {isProofComplete && (
+        <div className="w-full rounded border border-green-700 bg-green-100 p-2 text-green-700">
           Congratulations! You have completed your proof. Lines:{" "}
           {proof.lines.length}
         </div>

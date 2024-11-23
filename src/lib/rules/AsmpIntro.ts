@@ -3,7 +3,7 @@ import { Rule, type ProofLine } from "../rule";
 // Assumption Introduction
 export class AsmpIntro extends Rule {
   toString() {
-    return "Asmp Intr";
+    return "Assumption Introduction";
   }
 
   checkLineCount(lines: ProofLine[]) {

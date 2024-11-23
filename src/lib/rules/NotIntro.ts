@@ -5,7 +5,7 @@ import { AsmpIntro } from "./AsmpIntro";
 // Negation Introduction
 export class NotIntro extends Rule {
   toString() {
-    return "¬ Intr";
+    return "Negation Introduction";
   }
 
   checkLineCount(lines: ProofLine[]) {

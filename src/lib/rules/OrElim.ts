@@ -5,7 +5,7 @@ import { AsmpIntro } from "./AsmpIntro";
 // Disjunction Elimination
 export class OrElim extends Rule {
   toString() {
-    return "∨ Elim";
+    return "Disjunction Elimination";
   }
 
   checkLineCount(lines: ProofLine[]) {

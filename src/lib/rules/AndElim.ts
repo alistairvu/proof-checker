@@ -4,7 +4,7 @@ import { Rule, type ProofLine } from "../rule";
 // Conjunction Elimination
 export class AndElim extends Rule {
   toString() {
-    return "∧ Elim";
+    return "Conjunction Elimination";
   }
 
   checkLineCount(lines: ProofLine[]) {

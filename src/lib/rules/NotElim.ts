@@ -5,7 +5,7 @@ import { AsmpIntro } from "./AsmpIntro";
 // Negation Elimination
 export class NotElim extends Rule {
   toString() {
-    return "¬ Elim";
+    return "Negation Elimination";
   }
 
   checkLineCount(lines: ProofLine[]) {

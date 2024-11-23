@@ -4,7 +4,7 @@ import { Rule, type ProofLine } from "../rule";
 // Falsum Elimination
 export class FalsumElim extends Rule {
   toString() {
-    return "⊥ Elim";
+    return "Falsum Elimination";
   }
 
   checkLineCount(lines: ProofLine[]) {

@@ -4,7 +4,7 @@ import { Rule, type ProofLine } from "../rule";
 // Conjunction Introduction
 export class AndIntro extends Rule {
   toString() {
-    return "∧ Intr";
+    return "Conjunction Introduction";
   }
 
   checkLineCount(lines: ProofLine[]) {

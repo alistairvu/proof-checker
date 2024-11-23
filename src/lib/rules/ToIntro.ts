@@ -5,7 +5,7 @@ import { AsmpIntro } from "./AsmpIntro";
 // Implication Introduction
 export class ToIntro extends Rule {
   toString() {
-    return "→ Intr";
+    return "Implication Introduction";
   }
 
   checkLineCount(lines: ProofLine[]) {

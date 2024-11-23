@@ -58,10 +58,49 @@ export const VALID_RULES: { name: string; rule: Rule; use?: string }[] = [
     rule: new OrIntro(),
     use: "Disjunction Introduction expects only one reference.",
   },
-  { name: new ToElim().toString(), rule: new ToElim() },
-  { name: new ToIntro().toString(), rule: new ToIntro() },
-  { name: new FalsumIntro().toString(), rule: new FalsumIntro() },
-  { name: new FalsumElim().toString(), rule: new FalsumElim() },
-  { name: new NotIntro().toString(), rule: new NotIntro() },
-  { name: new NotElim().toString(), rule: new NotElim() },
+  {
+    name: new ToElim().toString(),
+    rule: new ToElim(),
+    use: `Implication Elimination expects two references, in this order:
+    
+1. Formula A → B
+2. Formula A`,
+  },
+  {
+    name: new ToIntro().toString(),
+    rule: new ToIntro(),
+    use: `Implication Introduction expects two references, in this order:
+    
+1. Formula A as an assumption
+2. Formula B, with A as an assumption`,
+  },
+  {
+    name: new FalsumIntro().toString(),
+    rule: new FalsumIntro(),
+    use: `Falsum Introduction expects two references, in this order:
+    
+1. Formula A
+2. Formula ¬A`,
+  },
+  {
+    name: new FalsumElim().toString(),
+    rule: new FalsumElim(),
+    use: "Falsum Elimination expects one reference: ⊥.",
+  },
+  {
+    name: new NotIntro().toString(),
+    rule: new NotIntro(),
+    use: `Negation Introduction expects two references, in this order:
+    
+1. Formula A as an assumption
+2. ⊥, with A as an assumption`,
+  },
+  {
+    name: new NotElim().toString(),
+    rule: new NotElim(),
+    use: `Negation Elimination expects two references, in this order:
+    
+1. Formula ¬A as an assumption
+2. ⊥, with ¬A as an assumption`,
+  },
 ];
